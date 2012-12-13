@@ -10,6 +10,7 @@
  */
 Model.prototype.set = function (attributes) {
     "use strict";
+
     var keyName;
     for (keyName in attributes) {
         this[keyName] = attributes[keyName];
@@ -21,6 +22,7 @@ Model.prototype.set = function (attributes) {
  */
 Model.prototype.get = function (attribute) {
     "use strict";
+
     return this[attribute];
 };
 
@@ -29,10 +31,13 @@ Model.prototype.get = function (attribute) {
  */
 Model.prototype.validate = function (attributes) {
     "use strict";
+
     throw new Error('this is Abstract method');
 };
 
 Model.prototype.clone = function () {
+    "use strict";
+
     var attr, temp = new this.constructor();
     for (attr in this) {
         temp[attr] = clone(this.get(attr));

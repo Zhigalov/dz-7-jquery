@@ -54,24 +54,27 @@ function loadEvents() {
 function showEventList() {
     "use strict";
 
-    var sortSelector = document.getElementById("eventSortType");
-    var events = myEvents.sortEventsBy(sortSelector.value);
-    if (document.getElementById("lastEvents").checked) {
+    var events = myEvents.sortEventsBy($("#eventSortType").val());
+
+    if ($("#lastEvents").is(":checked")) {
         events = events.findPastEvents();
     }
-    if (document.getElementById("futureEvents").checked) {
+
+    if ($("#futureEvents").is(":checked")) {
         events = events.findFutureEvents();
     }
-    var withPerson = document.getElementById("withPerson").value;
+
+    var withPerson = $("#withPerson").val();
     if (withPerson != "") {
         events = events.findEventsWithPerson(withPerson);
     }
-    var withoutPerson = document.getElementById("withoutPerson").value;
+
+    var withoutPerson = $("#withoutPerson").val();
     if (withoutPerson != "") {
         events = events.findEventsWithoutPerson(withoutPerson);
     }
-    var raiting = document.getElementById("raitingMore").value;
-    events = events.findEventsWithRaitingMore(raiting);
+    
+    events = events.findEventsWithRaitingMore($("#raitingMore").val());
 
     rePaintEvents(events);
 }
@@ -82,8 +85,7 @@ function showEventList() {
 function resetEventForm () {
     "use strict";
 
-    var form = document.getElementById("eventForm");
-    form.reset();
+    $("#eventForm")[0].reset();
     deleteMembers();
     setErrorMessage("");
 }
@@ -96,32 +98,25 @@ function resetEventForm () {
 function parseEventForm() {
     "use strict";
 
-    var name = document.getElementById("eventName").value;
-    var address = document.getElementById("eventAddress").value;
     var timeStart =
         new Date(
-            Date.parse(
-                document.getElementById("eventDateStart").value + "T" +
-                document.getElementById("eventTimeStart").value));
+            Date.parse($("#eventDateStart").val() + "T" + $("#eventTimeStart").val()));
     var timeEnd = 
          new Date(
-            Date.parse(
-                document.getElementById("eventDateEnd").value + "T" +
-                document.getElementById("eventTimeEnd").value));
-    var memberHTML = document.querySelectorAll(".memberItem");
-    var i, members = [];
-    for (i = 0; i < memberHTML.length; i++) {
-        members.push(memberHTML[i].innerHTML);
-    }    
-    var raiting = document.getElementById("eventRaiting").value;
+            Date.parse($("#eventDateEnd").val() + "T" + $("#eventTimeEnd").val()));
+    var $members = $(".memberItem")
+        .map(function() {
+            return $(this).html();
+        })
+        .toArray();
 
     return new Event({
-        "name": name || "<Без имени>",
-        "address": address || "<Без адреса>",
+        "name": $("#eventName").val() || "<Без имени>",
+        "address": $("#eventAddress").val() || "<Без адреса>",
         "timeStart": timeStart,
         "timeEnd": timeEnd,
-        "member": members,
-        "raiting": +raiting || 3
+        "member": $members,
+        "raiting": +$("#eventRaiting").val() || 3
         });
 }
 
@@ -133,18 +128,15 @@ function parseEventForm() {
 function rePaintEvents(events) {
     "use strict";
 
-    var oldContainer = document.getElementById("myEvents");
+    var $newContainer = $('<div />', {id: "myEvents"});
     
-    var newContainer = document.createElement("div");
-    newContainer.id = "myEvents";
-
     events.items
         .map(eventHtml)
         .map(function (event) {
-            newContainer.innerHTML += event;
+            $newContainer.html($newContainer.html() + event);
         });
 
-    oldContainer.parentNode.replaceChild(newContainer, oldContainer);
+    $("#myEvents").replaceWith($newContainer);
 }
 
 /**
@@ -177,17 +169,17 @@ function eventHtml(event) {
 function addMember() {
     "use strict";
 
-    var member = document.getElementById("eventMember").value;
-    if (member != "") {
-        var memberHTML =
-            "<div>" +
+    var $member = $("#eventMember").val();
+    if ($member != "") {
+        var $memberHTML = $("<div style='display:none' />"); 
+        $memberHTML.html(
                 "<span class='inputTitle'>&nbsp;</span>" +
-                "<span class='memberItem'>" + member +"</span>" +
-                "<img src='images/delete.jpg' alt='Удалить элемент' height='20' align='top' onclick='deleteMember(this);'>" +
-            "</div>";
+                "<span class='memberItem'>" + $member +"</span>" +
+                "<img class='display:none' src='images/delete.jpg' alt='Удалить элемент' height='20' align='top' onclick='deleteMember(this);'>");
 
-        var membersContainer = document.getElementById("eventMembers");
-        membersContainer.innerHTML += memberHTML;
+        $("#eventMembers").append($memberHTML);
+        $memberHTML.slideDown();
+        $("#eventMember").val('');
     }
 }
 
@@ -197,8 +189,9 @@ function addMember() {
 function deleteMember(deleteButton) {
     "use strict";
 
-    var memberContainer = deleteButton.parentNode;
-    memberContainer.parentNode.removeChild(memberContainer);
+    $(deleteButton).parent().slideUp('slow', function() {
+        $(this).remove();
+    });
 }
 
 /**
@@ -207,11 +200,7 @@ function deleteMember(deleteButton) {
 function deleteMembers() {
     "use strict";
 
-    var i, membersHTML = document.querySelectorAll(".memberItem");
-    for (i = 0; i < membersHTML.length; i++) {
-        var memberContainer = membersHTML[i].parentNode;
-        memberContainer.parentNode.removeChild(memberContainer);
-    }
+    $(".memberItem").parent().remove();
 }
 
 /**
@@ -222,6 +211,5 @@ function deleteMembers() {
 function setErrorMessage(message) {
     "use strict";
 
-    var errorContainer = document.getElementById("errorInForm");
-    errorContainer.innerHTML = message;
+    $("#errorInForm").text(message);
 }
